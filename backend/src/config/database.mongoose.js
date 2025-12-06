@@ -5,8 +5,10 @@ const uri = process.env.MONGODB_URI;
 
 async function connectDB() {
     try {
-        // Disable strict SSL
-        process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+        // Only disable SSL verification in development (Windows OpenSSL issue)
+        if (process.env.NODE_ENV === 'development') {
+            process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+        }
         
         await mongoose.connect(uri);
         
