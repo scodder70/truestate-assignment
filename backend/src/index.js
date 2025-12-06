@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const salesRoutes = require('./routes/sales.routes');
+const salesService = require('./services/sales.service');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,6 +19,15 @@ app.get('/', (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+const startServer = async () => {
+    try {
+        await salesService.loadData();
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
+    } catch (err) {
+        console.error('Failed to start server:', err);
+    }
+};
+
+startServer();

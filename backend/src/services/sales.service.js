@@ -1,8 +1,52 @@
-const salesData = require('../../data/sales.json');
+const fs = require('fs');
+const path = require('path');
+const csv = require('csv-parser');
 
 class SalesService {
     constructor() {
-        this.data = salesData;
+        this.data = [];
+        this.loaded = false;
+    }
+
+    async loadData() {
+        return new Promise((resolve, reject) => {
+            const results = [];
+            const csvPath = path.join(__dirname, '../../data/truestate_assignment_dataset.csv');
+
+            console.log('Loading data from CSV...', csvPath);
+
+            fs.createReadStream(csvPath)
+                .pipe(csv())
+                .on('data', (data) => {
+                    // Transform data as needed to match expected types
+                    // Clean up Tags from string "tag1,tag2" to array ["tag1", "tag2"]
+                    if (data.Tags) {
+                        data.Tags = data.Tags.split(',').map(t => t.trim());
+                    } else {
+                        data.Tags = [];
+                    }
+
+                    // Convert numeric fields
+                    data.Age = Number(data.Age);
+                    data.Quantity = Number(data.Quantity);
+                    data['Price per Unit'] = Number(data['Price per Unit']);
+                    data['Total Amount'] = Number(data['Total Amount']);
+                    data['Final Amount'] = Number(data['Final Amount']);
+                    data['Discount Percentage'] = Number(data['Discount Percentage']);
+
+                    results.push(data);
+                })
+                .on('end', () => {
+                    this.data = results;
+                    this.loaded = true;
+                    console.log(`Successfully loaded ${this.data.length} records.`);
+                    resolve();
+                })
+                .on('error', (err) => {
+                    console.error('Error loading CSV:', err);
+                    reject(err);
+                });
+        });
     }
 
     // Get all sales with filtering, search, sorting, and pagination
@@ -13,34 +57,67 @@ class SalesService {
         if (q) {
             const lowerQ = q.toLowerCase();
             results = results.filter(item =>
-                item['Customer Name'].toLowerCase().includes(lowerQ) ||
-                item['Phone Number'].includes(q)
+                (item['Customer Name'] && item['Customer Name'].toLowerCase().includes(lowerQ)) ||
+                (item['Phone Number'] && item['Phone Number'].includes(q))
             );
         }
 
         // 2. Filters
         if (filters) {
-            // Expected filters format: { 'Customer Region': ['North', 'South'], 'Gender': ['Male'], 'Age Range': '20-30' }
-            // Note: In a real query param, this might come as stringified JSON or separate params. 
-            // We will assume the controller parses it into a nice object for us.
-
-
             // Implement filtering logic
             Object.keys(filters).forEach(key => {
-                const filterValue = filters[key];
+                let filterValue = filters[key];
                 if (!filterValue || filterValue.length === 0) return;
+
+                // Normalize to array for consistent handling
+                if (!Array.isArray(filterValue)) {
+                    filterValue = [filterValue];
+                }
 
                 if (key === 'Age Range') {
                     // Example: "20-30" or "60+"
-                    // Handling range logic
-                    // For simplicity, let's assume specific ranges
-                } else if (Array.isArray(filterValue)) {
-                    // Multi-select
-                    results = results.filter(item => filterValue.includes(item[key]));
+                    const matchesAge = (age, range) => {
+                        if (!age) return false;
+                        if (range.endsWith('+')) {
+                            return age >= parseInt(range);
+                        }
+                        const [min, max] = range.split('-').map(Number);
+                        return age >= min && age <= max;
+                    };
+
+                    results = results.filter(item =>
+                        filterValue.some(range => matchesAge(item.Age, range))
+                    );
+                } else if (key === 'Date Range') {
+                    const rangeStr = filterValue[0];
+                    if (rangeStr && rangeStr.includes('|')) {
+                        const [start, end] = rangeStr.split('|');
+                        const startDate = new Date(start).getTime();
+                        const endDate = new Date(end).getTime();
+
+                        results = results.filter(item => {
+                            const itemDate = new Date(item.Date).getTime();
+                            return itemDate >= startDate && itemDate <= endDate;
+                        });
+                    }
+                } else {
+                    // Exact match for other fields (Region, Gender, Category, Payment Method, Tags)
+                    results = results.filter(item => {
+                        const itemValue = item[key];
+                        // Handle array fields in data (e.g. Tags)
+                        if (Array.isArray(itemValue)) {
+                            return itemValue.some(tag => filterValue.some(f => f.toLowerCase() === tag.toLowerCase()));
+                        }
+                        // Handle standard string fields
+                        if (typeof itemValue === 'string') {
+                            return filterValue.some(f => f.toLowerCase() === itemValue.toLowerCase());
+                        }
+                        // Fallback for non-strings
+                        if (itemValue === undefined || itemValue === null) return false;
+                        return filterValue.includes(itemValue);
+                    });
                 }
             });
-
-            // TODO: Refine filter logic in Controller -> Service interface
         }
 
         // 3. Sorting
