@@ -65,31 +65,45 @@ Server-side pagination ensures scalability. The API accepts `page` and `limit` p
 
 ## Deployment Instructions
 
-### Deploy to Render (Recommended)
+### Deploy to Vercel
+
+**Prerequisites:**
+- Push your code to GitHub
+- Create account at [vercel.com](https://vercel.com)
+- Install Vercel CLI: `npm install -g vercel`
 
 **Backend Deployment:**
-1. Push your code to GitHub
-2. Create account at [render.com](https://render.com)
-3. Create a new **Web Service**:
-   - Connect your GitHub repository
-   - Root directory: `backend`
-   - Build command: `npm install`
-   - Start command: `npm start`
-   - Add environment variables:
-     - `MONGODB_URI` = (your MongoDB connection string)
-     - `IMPORT_CSV=false`
-     - `PORT=5000`
-     - `NODE_ENV=production`
+1. Navigate to backend folder: `cd backend`
+2. Run: `vercel` (follow prompts)
+3. Configure environment variables in Vercel dashboard:
+   - `MONGODB_URI` = (your MongoDB connection string)
+   - `IMPORT_CSV=false`
+   - `NODE_ENV=production`
+4. Copy your backend URL (e.g., `https://your-backend.vercel.app`)
 
 **Frontend Deployment:**
-4. Create a **Static Site** for frontend:
-   - Root directory: `frontend`
-   - Build command: `npm install && npm run build`
-   - Publish directory: `dist`
-   - Add environment variable:
-     - `VITE_API_URL` = (your backend service URL, e.g., `https://your-app.onrender.com/api`)
+1. Navigate to frontend folder: `cd frontend`
+2. Create `.env.production` file:
+   ```
+   VITE_API_URL=https://your-backend.vercel.app/api
+   ```
+3. Run: `vercel` (follow prompts)
+4. Your app will be live at `https://your-app.vercel.app`
 
-**Alternative Platforms:**
+**Alternative Deployment Options:**
+
+### Deploy to Render
+**Backend:**
+- Create Web Service → Connect GitHub → Root: `backend`
+- Build: `npm install` → Start: `npm start`
+- Add env vars: `MONGODB_URI`, `IMPORT_CSV=false`
+
+**Frontend:**
+- Create Static Site → Root: `frontend`
+- Build: `npm install && npm run build` → Publish: `dist`
+- Add env var: `VITE_API_URL`
+
+**Other Platforms:**
 - **Backend**: Railway, Heroku, AWS Elastic Beanstalk
-- **Frontend**: Vercel, Netlify, GitHub Pages
+- **Frontend**: Netlify, GitHub Pages, Cloudflare Pages
 
