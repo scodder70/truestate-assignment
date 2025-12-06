@@ -1,8 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const salesRoutes = require('./routes/sales.routes');
-const { connectDB } = require('./config/database.mongoose');
+const salesRoutes = require('../src/routes/sales.routes');
+const { connectDB } = require('../src/config/database.mongoose');
 
 const app = express();
 
