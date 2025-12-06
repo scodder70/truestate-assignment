@@ -3,9 +3,10 @@ import { fetchSales } from '../services/api';
 
 export const useSalesData = () => {
     const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [meta, setMeta] = useState({});
+    const [initialLoad, setInitialLoad] = useState(true);
 
     // State for query params
     const [search, setSearch] = useState('');
@@ -20,12 +21,17 @@ export const useSalesData = () => {
             const result = await fetchSales({ q: search, filters, sort, page });
             setData(result.data);
             setMeta(result.meta);
+            if (initialLoad) {
+                // Minimum 10-second loader for initial load
+                await new Promise(resolve => setTimeout(resolve, 10000));
+                setInitialLoad(false);
+            }
         } catch (err) {
             setError(err.message);
         } finally {
             setLoading(false);
         }
-    }, [search, filters, sort, page]);
+    }, [search, filters, sort, page, initialLoad]);
 
     useEffect(() => {
         // Debounce search could be handled here or in the component.

@@ -25,15 +25,19 @@ Sorting is handled dynamically on the server via query parameters (`sort=Field:O
 Server-side pagination ensures scalability. The API accepts `page` and `limit` parameters, returning the specific slice of the dataset along with metadata (total items, total pages) to generate platform-agnostic pagination controls on the frontend.
 
 ## Setup Instructions
-1. **Install Dependencies**:
+1. **Download Dataset**:
+   Download the CSV file from [Google Drive](https://drive.google.com/file/d/1tzbyuxBmrBwMSXbL22r33FUMtO0V_lxb/view?usp=sharing) and save it as `truestate_assignment_dataset.csv` in the `backend/data` directory.
+
+2. **Install Dependencies**:
    Run `npm run install:all` in the root directory.
    *(Or running `npm install` separately in `/backend` and `/frontend`)*
 
-2. **Start Application**:
+3. **Start Application**:
    Run `npm run dev` in the root directory.
    - Backend will start on `http://localhost:5000`
    - Frontend will start on `http://localhost:5173`
 
-3. **Access**:
+4. **Access**:
    Open your browser to `http://localhost:5173`.
+   **Note:** Please wait for the data to load initially (approximately 10 seconds). The application will display a loading spinner while the CSV dataset is being processed.
 

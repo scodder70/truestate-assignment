@@ -87,6 +87,10 @@ const SalesTable = ({ data, loading, sort, onSort }) => {
                         <HeaderCell label="Age" />
                         <HeaderCell label="Product Category" />
                         <HeaderCell label="Quantity" sortKey="Quantity" align="right" />
+                        <HeaderCell label="Total Amount" align="right" />
+                        <HeaderCell label="Customer Region" />
+                        <HeaderCell label="Product ID" />
+                        <HeaderCell label="Employee Name" />
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
@@ -121,6 +125,18 @@ const SalesTable = ({ data, loading, sort, onSort }) => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-right">
                                 {row['Quantity'] < 10 ? `0${row['Quantity']}` : row['Quantity']}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-right">
+                                ₹ {Number(row['Total Amount']).toLocaleString('en-IN')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                                {row['Customer Region']}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {row['Product ID']}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                                {row['Employee Name']}
                             </td>
                         </tr>
                     ))}
