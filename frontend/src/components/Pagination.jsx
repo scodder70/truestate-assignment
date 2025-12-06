@@ -1,9 +1,9 @@
 import React from 'react';
 
 const Pagination = ({ meta, onPageChange }) => {
-    const { currentPage, totalPages, totalItems, itemsPerPage } = meta;
+    const { currentPage = 1, totalPages = 0, totalItems = 0, itemsPerPage = 10 } = meta || {};
 
-    if (totalPages <= 1) return null;
+    if (!meta || totalPages <= 1) return null;
 
     return (
         <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6 rounded-b-lg shadow-sm">

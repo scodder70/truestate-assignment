@@ -1,16 +1,8 @@
-const salesService = require('../services/sales.service');
+const salesService = require('../services/sales.service.mongo');
 
-const getSales = (req, res) => {
+const getSales = async (req, res) => {
     try {
         const { q, page, limit, sort, ...filters } = req.query;
-
-        // Parse filters
-        // Express query parser handles 'key=val&key=val2' as array automatically if keys match.
-        // We need to ensure we pass the right structure to service.
-        // Special handling for Age Range or Date Range if needed, but for now we pass raw query params 
-        // and let service/controller handle specifics. 
-        // We might want to separate "filters" from standard params.
-        // However, clean REST API usually puts them at root. 
 
         // Construct filter object
         const activeFilters = {};
@@ -23,7 +15,7 @@ const getSales = (req, res) => {
             }
         });
 
-        const result = salesService.getAllSales({
+        const result = await salesService.getAllSales({
             q,
             filters: activeFilters,
             sort,

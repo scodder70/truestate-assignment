@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchSales } from '../services/api';
+
+const API_BASE_URL = 'http://localhost:5000/api';
 
 export const useSalesData = () => {
     const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [meta, setMeta] = useState({});
-    const [initialLoad, setInitialLoad] = useState(true);
 
     // State for query params
     const [search, setSearch] = useState('');
@@ -18,30 +18,62 @@ export const useSalesData = () => {
         setLoading(true);
         setError(null);
         try {
-            const result = await fetchSales({ q: search, filters, sort, page });
-            setData(result.data);
-            setMeta(result.meta);
-            if (initialLoad) {
-                // Minimum 10-second loader for initial load
-                await new Promise(resolve => setTimeout(resolve, 10000));
-                setInitialLoad(false);
+            // Build query params
+            const params = new URLSearchParams();
+            if (search) params.append('q', search);
+            if (page) params.append('page', page);
+            params.append('limit', 10);
+            if (sort) params.append('sort', sort);
+
+            // Add filters
+            if (filters) {
+                Object.keys(filters).forEach(key => {
+                    if (filters[key]) {
+                        if (Array.isArray(filters[key])) {
+                            filters[key].forEach(val => params.append(key, val));
+                        } else {
+                            params.append(key, filters[key]);
+                        }
+                    }
+                });
             }
+
+            const url = `${API_BASE_URL}/sales?${params.toString()}`;
+            console.log('Fetching from:', url);
+
+            // Fetch data using native fetch
+            const response = await fetch(url);
+            
+            console.log('Response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+            }
+            
+            const result = await response.json();
+            console.log('Received data:', { 
+                dataCount: result.data?.length, 
+                totalItems: result.meta?.totalItems 
+            });
+            
+            setData(result.data || []);
+            setMeta(result.meta || {});
         } catch (err) {
+            console.error('Fetch error:', err);
             setError(err.message);
+            setData([]);
+            setMeta({});
         } finally {
             setLoading(false);
         }
-    }, [search, filters, sort, page, initialLoad]);
+    }, [search, filters, sort, page]);
 
     useEffect(() => {
-        // Debounce search could be handled here or in the component.
-        // implementing simple debounce for search if it changes rapidly?
-        // For now, relying on useEffect.
         const timer = setTimeout(() => {
             loadData();
-        }, 300); // 300ms debounce
+        }, 300);
         return () => clearTimeout(timer);
-    }, [loadData]); // loadData changes when deps change
+    }, [loadData]);
 
     return {
         data,

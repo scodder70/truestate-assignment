@@ -6,7 +6,7 @@ A full-stack Retail Sales Management System designed to demonstrate professional
 ## Tech Stack
 - **Frontend**: React (Vite), TailwindCSS
 - **Backend**: Node.js, Express.js
-- **Data**: In-Memory JSON Service (Mock Data)
+- **Database**: MongoDB Atlas (Cloud Database)
 
 ## Search Implementation Summary
 Search is implemented efficiently on the backend using case-insensitive string matching. It filters against both `Customer Name` and `Phone Number` fields. Debouncing is handled on the frontend (300ms) to ensure performance and reduce unnecessary API calls during typing.
@@ -25,19 +25,71 @@ Sorting is handled dynamically on the server via query parameters (`sort=Field:O
 Server-side pagination ensures scalability. The API accepts `page` and `limit` parameters, returning the specific slice of the dataset along with metadata (total items, total pages) to generate platform-agnostic pagination controls on the frontend.
 
 ## Setup Instructions
-1. **Download Dataset**:
-   Download the CSV file from [Google Drive](https://drive.google.com/file/d/1tzbyuxBmrBwMSXbL22r33FUMtO0V_lxb/view?usp=sharing) and save it as `truestate_assignment_dataset.csv` in the `backend/data` directory.
 
-2. **Install Dependencies**:
+### 1. **Setup MongoDB Atlas (Free Tier)**
+   - Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register)
+   - Create a free account and cluster
+   - Click "Connect" → "Connect your application"
+   - Copy the connection string (looks like: `mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/<database-name>`)
+   - In **Network Access**, add `0.0.0.0/0` to allow all IPs (or your specific IP)
+   - In **Database Access**, create a database user with password
+   - Create a database and collection:
+     - Database name: `truestate-assignment`
+     - Collection name: `truestate-assn`
+   - Upload your CSV data to the `truestate-assn` collection
+
+### 2. **Configure Environment Variables**
+   - Navigate to `backend` folder
+   - Create or edit `.env` file with the following:
+     ```
+     PORT=5000
+     MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/retail-sales?retryWrites=true&w=majority
+     NODE_ENV=development
+     IMPORT_CSV=false
+     ```
+   - Replace `<username>` and `<password>` in the connection string with your database credentials
+   - **Important:** Set `IMPORT_CSV=false` since you've already uploaded data to MongoDB
+
+### 3. **Install Dependencies**
    Run `npm run install:all` in the root directory.
-   *(Or running `npm install` separately in `/backend` and `/frontend`)*
+   *(Or run `npm install` separately in `/backend` and `/frontend`)*
 
-3. **Start Application**:
+### 4. **Start Application**
    Run `npm run dev` in the root directory.
    - Backend will start on `http://localhost:5000`
    - Frontend will start on `http://localhost:5173`
+   - The application will connect to MongoDB and fetch data from the `truestate-assn` collection
 
-4. **Access**:
-   Open your browser to `http://localhost:5173`.
-   **Note:** Please wait for the data to load initially (approximately 10 seconds). The application will display a loading spinner while the CSV dataset is being processed.
+### 5. **Access**
+   Open your browser to `http://localhost:5173`
+
+## Deployment Instructions
+
+### Deploy to Render (Recommended)
+
+**Backend Deployment:**
+1. Push your code to GitHub
+2. Create account at [render.com](https://render.com)
+3. Create a new **Web Service**:
+   - Connect your GitHub repository
+   - Root directory: `backend`
+   - Build command: `npm install`
+   - Start command: `npm start`
+   - Add environment variables:
+     - `MONGODB_URI` = (your MongoDB connection string)
+     - `IMPORT_CSV=false`
+     - `PORT=5000`
+     - `NODE_ENV=production`
+
+**Frontend Deployment:**
+4. Create a **Static Site** for frontend:
+   - Root directory: `frontend`
+   - Build command: `npm install && npm run build`
+   - Publish directory: `dist`
+   - Add environment variable:
+     - `VITE_API_URL` = (your backend service URL, e.g., `https://your-app.onrender.com/api`)
+
+**Alternative Platforms:**
+- **Backend**: Railway, Heroku, AWS Elastic Beanstalk
+- **Frontend**: Vercel, Netlify, GitHub Pages
 
