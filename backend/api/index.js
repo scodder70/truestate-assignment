@@ -6,8 +6,15 @@ const { connectDB } = require('../src/config/database.mongoose');
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Middleware - Configure CORS
+app.use(cors({
+    origin: [
+        'http://localhost:5173',
+        'https://truestate-assignment-frontend.vercel.app',
+        /\.vercel\.app$/
+    ],
+    credentials: true
+}));
 app.use(express.json());
 
 // Routes

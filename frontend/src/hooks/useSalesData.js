@@ -38,7 +38,9 @@ export const useSalesData = () => {
                 });
             }
 
-            const url = `${API_BASE_URL}/sales?${params.toString()}`;
+            // Ensure no double slashes in URL
+            const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+            const url = `${baseUrl}/sales?${params.toString()}`;
             console.log('Fetching from:', url);
 
             // Fetch data using native fetch
